@@ -48,7 +48,6 @@ VOLUME ["/data"]
 ENTRYPOINT ["/usr/bin/entrypoint"]
 CMD ["/bin/s6-svscan", "/etc/s6"]
 
-COPY docker /
 COPY --from=build-env /gitea /app/gitea/gitea
 
 RUN ["cross-build-end"]
