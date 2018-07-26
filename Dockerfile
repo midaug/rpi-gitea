@@ -2,10 +2,8 @@ FROM alpine:3.7 AS build-env
 RUN apk add --no-cache \
     curl \
     jq
-ENV ARCH=arm-6
-RUN RELEASE=$(curl -L --silent "https://api.github.com/repos/go-gitea/gitea/releases/latest" \
-      | jq -r '.["tag_name"]' \
-      | sed -e 's/v//') && \
+ENV ARCH=arm-7
+RUN RELEASE=1.5.0-rc2
     curl -L -o /gitea https://github.com/go-gitea/gitea/releases/download/v${RELEASE}/gitea-${RELEASE}-linux-${ARCH} && \
     chmod 0755 /gitea
 
@@ -48,6 +46,7 @@ VOLUME ["/data"]
 ENTRYPOINT ["/usr/bin/entrypoint"]
 CMD ["/bin/s6-svscan", "/etc/s6"]
 
+COPY docker /
 COPY --from=build-env /gitea /app/gitea/gitea
 
 RUN ["cross-build-end"]
