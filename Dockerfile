@@ -5,7 +5,7 @@ RUN apk add --no-cache \
     curl \
     jq
 ENV ARCH=arm-6
-RUN RELEASE=1.5.0-rc2
+RUN RELEASE=1.5.0-rc2 && \
     curl -L -o /gitea https://github.com/go-gitea/gitea/releases/download/v${RELEASE}/gitea-${RELEASE}-linux-${ARCH} && \
     chmod 0755 /gitea
 
