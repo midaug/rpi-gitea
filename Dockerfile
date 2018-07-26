@@ -1,14 +1,14 @@
-FROM alpine:3.7 AS build-env
+FROM resin/armhf-alpine
+LABEL maintainer="blog.midaug.win>"
+
 RUN apk add --no-cache \
     curl \
     jq
-ENV ARCH=arm-7
+ENV ARCH=arm-6
 RUN RELEASE=1.5.0-rc2
     curl -L -o /gitea https://github.com/go-gitea/gitea/releases/download/v${RELEASE}/gitea-${RELEASE}-linux-${ARCH} && \
     chmod 0755 /gitea
 
-FROM resin/armhf-alpine
-LABEL maintainer="blog.midaug.win>"
 RUN ["cross-build-start"]
 
 EXPOSE 22 3000
