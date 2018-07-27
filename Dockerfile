@@ -1,33 +1,24 @@
-FROM alpine:3.7 AS build-env
-RUN apk add --no-cache \
-    curl \
-    jq
-ENV ARCH=arm-7
-RUN RELEASE=$(curl -L --silent "https://api.github.com/repos/go-gitea/gitea/releases/latest" \
-      | jq -r '.["tag_name"]' \
-      | sed -e 's/v//') && \
-    curl -L -o /gitea https://github.com/go-gitea/gitea/releases/download/v${RELEASE}/gitea-${RELEASE}-linux-${ARCH} && \
-    chmod 0755 /gitea
+FROM resin/armhf-alpine:latest
+MAINTAINER Patrick Eichmann <phreakazoid@phreakazoid.com>
 
-FROM resin/armhf-alpine
-LABEL maintainer="blog.midaug.win>"
-RUN ["cross-build-start"]
+RUN [ "cross-build-start" ]
 
-EXPOSE 22 3000
+## SET NEWEST VERSION & DOWNLOAD URL
+ENV VERSION 1.5.0-rc2
 
 RUN apk --no-cache add \
-    bash \
-    ca-certificates \
-    curl \
-    gettext \
-    git \
-    linux-pam \
-    openssh \
-    s6 \
-    sqlite \
     su-exec \
+    ca-certificates \
+    sqlite \
+    bash \
+    git \
+    subversion \
+    linux-pam \
+    s6 \
+    curl \
+    wget \
+    openssh \
     tzdata
-
 RUN addgroup \
     -S -g 1000 \
     git && \
@@ -38,17 +29,25 @@ RUN addgroup \
     -u 1000 \
     -G git \
     git && \
-  echo "git:$(dd if=/dev/urandom bs=24 count=1 status=none | base64)" | chpasswd
+  echo "git:$(date +%s | sha256sum | base64 | head -c 32)" | chpasswd
 
 ENV USER git
 ENV GITEA_CUSTOM /data/gitea
+ENV GODEBUG=netdns=go
+
+## GET DOCKER FILES
+RUN svn export https://github.com/go-gitea/gitea/trunk/docker ./ --force
+
+### GET GITEA GO FILE FOR RPI
+RUN mkdir -p /app/gitea && \
+    wget -O /app/gitea/gitea https://github.com/go-gitea/gitea/releases/download/v$VERSION/gitea-$VERSION-linux-arm-7 && \
+    chmod 0755 /app/gitea/gitea
+    
+RUN [ "cross-build-end" ]
 
 VOLUME ["/data"]
 
+EXPOSE 22 3000
+
 ENTRYPOINT ["/usr/bin/entrypoint"]
 CMD ["/bin/s6-svscan", "/etc/s6"]
-
-COPY docker /
-COPY --from=build-env /gitea /app/gitea/gitea
-
-RUN ["cross-build-end"]
