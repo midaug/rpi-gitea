@@ -4,7 +4,7 @@ MAINTAINER blog.midaug.win
 RUN [ "cross-build-start" ]
 
 ## SET NEWEST VERSION & DOWNLOAD URL
-ENV VERSION 1.6.0-dev
+ENV VERSION 1.6.0-rc1
 
 RUN apk --no-cache add \
     su-exec \
